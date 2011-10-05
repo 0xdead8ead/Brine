@@ -44,6 +44,10 @@ class CryptoWrapper():
     blockSize = 16          #Block Size
     keySize = 32            #keySize in Bytes - 32 bytes = 256bit Encryption
     mode = AES.MODE_CBC     #Cipher Block Mode
+    
+    def __init__(self):
+        
+        pass
 
     def __generateAESKeystring__(self):
         '''Generates Pseudo Random AES Key and Base64 Encodes Key - Returns AES Key'''
