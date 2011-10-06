@@ -28,6 +28,8 @@ Brine Secured/Authenticated Pickles - based cPickle and pyCrypto
 
 '''
 
+__author__ = 'Chase Schultz'
+__version__ = '0.1'
 
 import os
 import cPickle as pickle
