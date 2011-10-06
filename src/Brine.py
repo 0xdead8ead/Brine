@@ -4,7 +4,7 @@
 
 Brine Secure Pickling Module - By Chase Schultz
 
-Currently Supports: AES-256 Encrypted Pickles, RSA Public Key Encrypted Symmetric, RSA Signed Pickles
+Currently Supports: AES-256 Encrypted Pickles, RSA Public Key Encrypted Symmetric Key, RSA Signed Pickles
 
 Dependencies: pyCrypto - https://github.com/dlitz/pycrypto
 
