@@ -55,7 +55,7 @@ class Brine():
         pass
     
     def dumps(self, obj, signingPrivateKey, receipientPublicKey, pickler=pickle):
-        '''Pickle and Encrypt a python object - SHIT NEEDS WORK, too many arguments'''
+        '''Pickle and Encrypt a Python Object with AES / Encrypt AES Key with Receipient Public RSA Key / Signs Pickle with Sender Private Key'''
         cryptoWrapper = CryptoWrapper();
         encryptedPickle, aesKey = cryptoWrapper.aesEncrypt(self.picklePad + pickler.dumps(obj))
         pickleSignature = cryptoWrapper.rsaSign(signingPrivateKey, encryptedPickle)
@@ -64,7 +64,7 @@ class Brine():
     
 
     def loads(self, encryptedPickle, encryptedKey, pickleSignature, receipientPrivateKey, verificationKey, pickler=pickle):
-        '''Decrypts Pickle and Loads Object'''
+        '''Checks Pickle Signature / Decrypts AES Key and Pickle and Loads Object'''
         cryptoWrapper = CryptoWrapper()
         try:
             self.__verifyPickle__(encryptedPickle, verificationKey, pickleSignature)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     
     
     '''Instatiation of Brine Module - Dumps Python object into Encyrpted Pickle'''
-    dict = {'cat': 'hackers', 'bill': 45}
+    dict = {'object': 'to be', 'pickled': 'test case'}
     brine = Brine()
     encryptedPickle, encryptedKey, pickleSignature = brine.dumps(dict, signingKey, receipientPublicKey)
         
