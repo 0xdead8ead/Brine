@@ -1,9 +1,19 @@
-Version 0.1 of Brine. A Secure Pickle Library for Signed / Encrypted Pickling. 
-Please let me know what you think, I've got basic functionality ready. Documentation is also coming. 
+Version 0.2 of Brine. A Secure Pickle Library for Signed / Encrypted Pickling. 
+
+Brine utilizes Modern Strong Cryptography - AES-256 and Elliptic Curve Cryptography-521.
+
+The pickle itself is encrypted with AES-256 with a randomly generated key. 
+That key is then encrypted with the ECC Public Key for the Intended Reciepient.
+The Encrypted pickle is then Signed with the Origin ECC Private Key ensure authenticity.
+
+
+Please let me know what you think, I've got basic functionality implemented. Documentation is also coming. 
+
+I will also be building a python standard package for this library.
 
 If you have questions or requests for functionality please contact me.
 
-f47h3r@0x539.us
+chaschul@uat.edu or f47h3r@0x539.us
 
 This is a work in progress... more to come soon.
 
