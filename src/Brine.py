@@ -4,10 +4,10 @@
 
 Brine Secure Pickling Module - By Chase Schultz
 
-Currently Supports: AES-256 Encrypted Pickles, RSA Public Key Encrypted Symmetric Key, RSA Signed Pickles
+Currently Supports: AES-256 Encrypted Pickles, ECC Public Key Encrypted Symmetric Key, ECC Signed Pickles
 
 Dependencies: pyCrypto - https://github.com/dlitz/pycrypto
-
+              PyECC - https://github.com/rtyler/PyECC
 
 Brine Secured/Authenticated Pickles - based cPickle and pyCrypto
     Copyright (C) 2011  Chase Schultz - chaschul@uat.edu
@@ -29,7 +29,7 @@ Brine Secured/Authenticated Pickles - based cPickle and pyCrypto
 '''
 
 __author__ = 'Chase Schultz'
-__version__ = '0.1'
+__version__ = '0.2'
 
 import os
 import cPickle as pickle
@@ -41,37 +41,33 @@ class Brine():
     def __init__(self):
         self.picklePad = 'pickle::'
     
-    def __verifyPickle__(self, encryptedPickle, verficationKey, signature):
+    def __verifyPickle__(self, encryptedPickle, verificationKey, eccCurve, signature):
         '''Veryify Pickle Authenticity with RSA Signature - Return True if good Signature'''
         crypto = CryptoWrapper()
-        if crypto.rsaVerify(verificationKey, encryptedPickle, signature) is False:
+        if crypto.eccVerify(verificationKey, eccCurve, encryptedPickle, signature) is False:
             raise Exception('Could not Verify Pickle')
             os._exit(1)
         else:
             return True
     
-    def __decryptPickle__(self,encryptedPickle, encryptedKey):
-        
-        pass
-    
-    def dumps(self, obj, signingPrivateKey, receipientPublicKey, pickler=pickle):
-        '''Pickle and Encrypt a Python Object with AES / Encrypt AES Key with Receipient Public RSA Key / Signs Pickle with Sender Private Key'''
+    def dumps(self, obj, signingPrivateKey, receipientPublicKey, eccCurve ,pickler=pickle):
+        '''Pickle and Encrypt a Python Object with AES / Encrypt AES Key with Receipient Public ECC Key / Signs Pickle with Sender Private Key'''
         cryptoWrapper = CryptoWrapper();
         encryptedPickle, aesKey = cryptoWrapper.aesEncrypt(self.picklePad + pickler.dumps(obj))
-        pickleSignature = cryptoWrapper.rsaSign(signingPrivateKey, encryptedPickle)
-        encryptedKey = cryptoWrapper.rsaPublicEncrypt(receipientPublicKey, aesKey)
+        pickleSignature = cryptoWrapper.eccSign(signingPrivateKey, eccCurve, encryptedPickle)
+        encryptedKey = cryptoWrapper.eccEncrypt(receipientPublicKey, eccCurve, aesKey)
         return encryptedPickle, encryptedKey, pickleSignature
     
 
-    def loads(self, encryptedPickle, encryptedKey, pickleSignature, receipientPrivateKey, verificationKey, pickler=pickle):
+    def loads(self, encryptedPickle, encryptedKey, pickleSignature, receipientPrivateKey, verificationKey, eccCurve, pickler=pickle):
         '''Checks Pickle Signature / Decrypts AES Key and Pickle and Loads Object'''
         cryptoWrapper = CryptoWrapper()
         try:
-            self.__verifyPickle__(encryptedPickle, verificationKey, pickleSignature)
+            self.__verifyPickle__(encryptedPickle, verificationKey, eccCurve, pickleSignature)
         except:
             print 'Invalid Pickle - Not Decrypting'
             raise Exception('Pickle Fails Signature Verification')
-        aesKey = cryptoWrapper.rsaPrivateDecrypt(receipientPrivateKey, encryptedKey)
+        aesKey = cryptoWrapper.eccDecrypt(receipientPrivateKey, eccCurve, encryptedKey)
         pickle = cryptoWrapper.aesDecrypt(aesKey, encryptedPickle)
         # simple integrity check to verify that we got meaningful data
         assert pickle.startswith(self.picklePad), "unexpected header"
@@ -82,17 +78,18 @@ if __name__ == '__main__':
     
     '''Instatiation of Crypto Wrapper - Generate Signing Key Pair and RSA Key Pair'''
     crypto = CryptoWrapper()
-    signingKey, verificationKey = crypto.generateRSAKeys(2048)
-    receipientPrivateKey, receipientPublicKey = crypto.generateRSAKeys(2048)
+    signingKey, verificationKey, eccSignCurve = crypto.eccGenerate()
+    receipientPrivateKey, receipientPublicKey, eccCryptoCurve = crypto.eccGenerate()
     
     
     '''Instatiation of Brine Module - Dumps Python object into Encyrpted Pickle'''
     dict = {'object': 'to be', 'pickled': 'test case'}
     brine = Brine()
-    encryptedPickle, encryptedKey, pickleSignature = brine.dumps(dict, signingKey, receipientPublicKey)
+    encryptedPickle, encryptedKey, pickleSignature = brine.dumps(dict, signingKey, receipientPublicKey, eccSignCurve)
+      
         
     '''Unencrypt Pickle Object and Return object'''
-    unpickledObject = brine.loads(encryptedPickle, encryptedKey, pickleSignature, receipientPrivateKey, verificationKey)
+    unpickledObject = brine.loads(encryptedPickle, encryptedKey, pickleSignature, receipientPrivateKey, verificationKey, eccSignCurve)
     print unpickledObject
     
     
